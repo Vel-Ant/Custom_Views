@@ -73,7 +73,7 @@ class StatsView @JvmOverloads constructor(
             return
         }
 
-        canvas.drawCircle(center.x, center.y, radius, paint)
+        canvas.drawCircle(center.x, center.y, radius, paint)    // решение задачи "Not Filled"
 
         var startFrom = -90F
 
@@ -81,6 +81,8 @@ class StatsView @JvmOverloads constructor(
 
         data.forEachIndexed {index, datum ->
             val angle = (datum / dataMax) * 360F
+
+            // решение задачи "Dot"
             if (index==data.size - 1) {
                 paint.color = colors.getOrNull(index) ?: randomColor()
                 canvas.drawArc(oval, startFrom, angle, false, paint)
@@ -95,7 +97,7 @@ class StatsView @JvmOverloads constructor(
         }
 
         canvas.drawText(
-            "%.2f%%".format((data.sum() / dataMax) * 100F),
+            "%.2f%%".format((data.sum() / dataMax) * 100F), // решение задачи "Smart StatsView"
             center.x,
             center.y + textPaint.textSize / 4,
             textPaint,
