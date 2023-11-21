@@ -61,8 +61,10 @@ class StatsView @JvmOverloads constructor(
         radius = min(w, h) / 2F - lineWidth / 2
         center = PointF(w / 2F, h / 2F)
         oval = RectF(
-            center.x - radius, center.y - radius,
-            center.x + radius, center.y + radius,
+            center.x - radius,
+            center.y - radius,
+            center.x + radius,
+            center.y + radius,
         )
     }
 
@@ -79,9 +81,17 @@ class StatsView @JvmOverloads constructor(
 
         data.forEachIndexed {index, datum ->
             val angle = (datum / dataMax) * 360F
-            paint.color = colors.getOrNull(index) ?: randomColor()
-            canvas.drawArc(oval, startFrom, angle, false, paint)
-            startFrom += angle
+            if (index==data.size - 1) {
+                paint.color = colors.getOrNull(index) ?: randomColor()
+                canvas.drawArc(oval, startFrom, angle, false, paint)
+                startFrom += angle
+                paint.color = colors.getOrNull(0) ?: randomColor()
+                canvas.drawArc(oval, startFrom, angle, false, paint)
+            } else {
+                paint.color = colors.getOrNull(index) ?: randomColor()
+                canvas.drawArc(oval, startFrom, angle, false, paint)
+                startFrom += angle
+            }
         }
 
         canvas.drawText(
