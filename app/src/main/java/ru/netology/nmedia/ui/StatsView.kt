@@ -1,5 +1,6 @@
 package ru.netology.nmedia.ui
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -8,6 +9,7 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.LinearInterpolator
 import androidx.core.content.withStyledAttributes
 import ru.netology.nmedia.R
 import ru.netology.nmedia.util.AndroidUtils
@@ -27,6 +29,9 @@ class StatsView @JvmOverloads constructor(
     private var lineWidth = AndroidUtils.dp(context, 5F).toFloat()
     private var fontSize = AndroidUtils.dp(context, 40F).toFloat()
     private var colors = emptyList<Int>()
+
+    private var progress = 0F
+    private var valueAnimator: ValueAnimator? = null
 
     init {
         context.withStyledAttributes(attrs, R.styleable.StatsView) {
@@ -54,7 +59,7 @@ class StatsView @JvmOverloads constructor(
     var data: List<Float> = emptyList()
         set(value) {
             field = value
-            invalidate()
+            update()
         }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -73,35 +78,66 @@ class StatsView @JvmOverloads constructor(
             return
         }
 
-        canvas.drawCircle(center.x, center.y, radius, paint)    // решение задачи "Not Filled"
-
         var startFrom = -90F
 
         val dataMax = data.maxOrNull()!!.times(data.size)
 
-        data.forEachIndexed {index, datum ->
+//        // решение задачи "Dot" - вариант 1
+//        data.forEachIndexed {index, datum ->
+//            val angle = (datum / dataMax) * 360F
+//
+//            if (index==data.size - 1) {
+//                paint.color = colors.getOrNull(index) ?: randomColor()
+//                canvas.drawArc(oval, startFrom, angle, false, paint)
+//                startFrom += angle
+//                paint.color = colors.getOrNull(0) ?: randomColor()
+//                canvas.drawArc(oval, startFrom, 1F, false, paint)
+//            } else {
+//                paint.color = colors.getOrNull(index) ?: randomColor()
+//                canvas.drawArc(oval, startFrom, angle, false, paint)
+//                startFrom += angle
+//            }
+//        }
+
+        // решение задачи "Dot" - вариант 2
+        data.forEachIndexed { index, datum ->
             val angle = (datum / dataMax) * 360F
 
-            // решение задачи "Dot"
-            if (index==data.size - 1) {
-                paint.color = colors.getOrNull(index) ?: randomColor()
-                canvas.drawArc(oval, startFrom, angle, false, paint)
-                startFrom += angle
-                paint.color = colors.getOrNull(0) ?: randomColor()
-                canvas.drawArc(oval, startFrom, angle, false, paint)
-            } else {
-                paint.color = colors.getOrNull(index) ?: randomColor()
-                canvas.drawArc(oval, startFrom, angle, false, paint)
-                startFrom += angle
-            }
+            paint.color = colors.getOrNull(index) ?: randomColor()
+            canvas.drawArc(oval, startFrom, angle * progress, false, paint)
+            startFrom += angle
         }
 
+        paint.color = colors.getOrNull(0) ?: randomColor()
+        canvas.drawArc(oval, startFrom, 1F, false, paint)
+        
         canvas.drawText(
             "%.2f%%".format((data.sum() / dataMax) * 100F), // решение задачи "Smart StatsView"
             center.x,
             center.y + textPaint.textSize / 4,
             textPaint,
         )
+    }
+
+    // параллельное заполнение данными
+    private fun update() {
+        valueAnimator?.let {
+            it.removeAllListeners()
+            it.cancel()
+        }
+        progress = 0F
+
+        valueAnimator = ValueAnimator.ofFloat(0F, 1F).apply {
+            addUpdateListener { anim ->
+                progress = anim.animatedValue as Float
+                invalidate()
+            }
+            startDelay = 1000
+            duration = 2000
+            interpolator = LinearInterpolator()
+        }.also {
+            it.start()
+        }
     }
 
     private fun randomColor() = Random.nextInt(0xFF000000.toInt(), 0xFFFFFFFF.toInt())
