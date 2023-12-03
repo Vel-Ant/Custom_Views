@@ -74,10 +74,10 @@ class AppActivity : AppCompatActivity(R.layout.activity_app) {
 // Пример 4 Анимация нескольких свойств через PropertyValuesHolder
 //        val rotation = PropertyValuesHolder.ofFloat(View.ROTATION, 0F, 360F)
 //        val alpha = PropertyValuesHolder.ofFloat(View.ALPHA, 0F, 1F)
-//        ObjectAnimator.ofPropertyValuesHolder(view, rotation, alpha)
+//        ObjectAnimator.ofPropertyValuesHolder(view, rotation)
 //            .apply {
-//                startDelay = 2000
-//                duration = 1000
+//                startDelay = 1000
+//                duration = 2000
 //                interpolator = LinearInterpolator()
 //            }.start()
 // Конец примера 4

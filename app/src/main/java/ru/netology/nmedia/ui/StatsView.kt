@@ -1,5 +1,9 @@
 package ru.netology.nmedia.ui
 
+import android.animation.AnimatorSet
+import android.animation.ArgbEvaluator
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
@@ -9,7 +13,14 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.AccelerateDecelerateInterpolator
+import android.view.animation.AccelerateInterpolator
+import android.view.animation.AnimationUtils
+import android.view.animation.AnticipateInterpolator
+import android.view.animation.AnticipateOvershootInterpolator
+import android.view.animation.BounceInterpolator
 import android.view.animation.LinearInterpolator
+import androidx.annotation.ColorInt
 import androidx.core.content.withStyledAttributes
 import ru.netology.nmedia.R
 import ru.netology.nmedia.util.AndroidUtils
@@ -60,6 +71,7 @@ class StatsView @JvmOverloads constructor(
         set(value) {
             field = value
             update()
+//            invalidate()
         }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -78,28 +90,12 @@ class StatsView @JvmOverloads constructor(
             return
         }
 
-        var startFrom = -90F
+//        var startFrom = -90F
+
+        var startFrom = -90F - progress * 360 // Задача Rotation
 
         val dataMax = data.maxOrNull()!!.times(data.size)
 
-//        // решение задачи "Dot" - вариант 1
-//        data.forEachIndexed {index, datum ->
-//            val angle = (datum / dataMax) * 360F
-//
-//            if (index==data.size - 1) {
-//                paint.color = colors.getOrNull(index) ?: randomColor()
-//                canvas.drawArc(oval, startFrom, angle, false, paint)
-//                startFrom += angle
-//                paint.color = colors.getOrNull(0) ?: randomColor()
-//                canvas.drawArc(oval, startFrom, 1F, false, paint)
-//            } else {
-//                paint.color = colors.getOrNull(index) ?: randomColor()
-//                canvas.drawArc(oval, startFrom, angle, false, paint)
-//                startFrom += angle
-//            }
-//        }
-
-        // решение задачи "Dot" - вариант 2
         data.forEachIndexed { index, datum ->
             val angle = (datum / dataMax) * 360F
 
@@ -110,9 +106,9 @@ class StatsView @JvmOverloads constructor(
 
         paint.color = colors.getOrNull(0) ?: randomColor()
         canvas.drawArc(oval, startFrom, 1F, false, paint)
-        
+
         canvas.drawText(
-            "%.2f%%".format((data.sum() / dataMax) * 100F), // решение задачи "Smart StatsView"
+            "%.2f%%".format((data.sum() / dataMax) * 100F),
             center.x,
             center.y + textPaint.textSize / 4,
             textPaint,
@@ -127,12 +123,12 @@ class StatsView @JvmOverloads constructor(
         }
         progress = 0F
 
-        valueAnimator = ValueAnimator.ofFloat(0F, 1F).apply {
+        valueAnimator = ValueAnimator.ofFloat(1F, 0F).apply {
             addUpdateListener { anim ->
                 progress = anim.animatedValue as Float
                 invalidate()
             }
-            startDelay = 1000
+            startDelay = 2000
             duration = 2000
             interpolator = LinearInterpolator()
         }.also {
