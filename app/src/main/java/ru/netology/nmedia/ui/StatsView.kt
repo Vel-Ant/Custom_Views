@@ -1,9 +1,5 @@
 package ru.netology.nmedia.ui
 
-import android.animation.AnimatorSet
-import android.animation.ArgbEvaluator
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
@@ -13,15 +9,11 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.AccelerateInterpolator
-import android.view.animation.AnimationUtils
-import android.view.animation.AnticipateInterpolator
-import android.view.animation.AnticipateOvershootInterpolator
-import android.view.animation.BounceInterpolator
 import android.view.animation.LinearInterpolator
-import androidx.annotation.ColorInt
+import androidx.core.animation.doOnEnd
 import androidx.core.content.withStyledAttributes
+import androidx.core.view.ViewCompat
+import kotlinx.coroutines.delay
 import ru.netology.nmedia.R
 import ru.netology.nmedia.util.AndroidUtils
 import kotlin.math.min
@@ -92,20 +84,20 @@ class StatsView @JvmOverloads constructor(
 
 //        var startFrom = -90F
 
-        var startFrom = -90F - progress * 360 // Задача Rotation
+//        var startFrom = -90F - progress * 360 // Задача Rotation
+
+        var startFrom = -45F - progress * 45F  // Задача Bidirectional
 
         val dataMax = data.maxOrNull()!!.times(data.size)
 
-        data.forEachIndexed { index, datum ->
+        data.forEachIndexed() { index, datum ->
+
             val angle = (datum / dataMax) * 360F
 
             paint.color = colors.getOrNull(index) ?: randomColor()
             canvas.drawArc(oval, startFrom, angle * progress, false, paint)
             startFrom += angle
         }
-
-        paint.color = colors.getOrNull(0) ?: randomColor()
-        canvas.drawArc(oval, startFrom, 1F, false, paint)
 
         canvas.drawText(
             "%.2f%%".format((data.sum() / dataMax) * 100F),
@@ -115,7 +107,7 @@ class StatsView @JvmOverloads constructor(
         )
     }
 
-    // параллельное заполнение данными
+    // параллельное заполнение данными + Rotation и Bidirectional
     private fun update() {
         valueAnimator?.let {
             it.removeAllListeners()
@@ -123,12 +115,12 @@ class StatsView @JvmOverloads constructor(
         }
         progress = 0F
 
-        valueAnimator = ValueAnimator.ofFloat(1F, 0F).apply {
+        valueAnimator = ValueAnimator.ofFloat(0F, 1F).apply {
             addUpdateListener { anim ->
                 progress = anim.animatedValue as Float
                 invalidate()
             }
-            startDelay = 2000
+            startDelay = 1000
             duration = 2000
             interpolator = LinearInterpolator()
         }.also {
